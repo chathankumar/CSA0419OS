@@ -1,0 +1,70 @@
+#include <stdio.h>
+
+struct Process {
+    int burst_time; // burst time of the process
+    int remaining_time; // remaining time of the process
+    int waiting_time; // waiting time of the process
+    int turnaround_time; // turnaround time of the process
+};
+
+int main() {
+    int n = 3; // number of processes
+    int quantum = 4; // quantum time
+    struct Process processes[n]; // array of processes
+    int total_waiting_time = 0; // total waiting time
+    int total_turnaround_time = 0; // total turnaround time
+
+    // initialize the processes
+    processes[0].burst_time = 24;
+    processes[1].burst_time = 3;
+    processes[2].burst_time = 3;
+
+    for (int i = 0; i < n; i++) {
+        processes[i].remaining_time = processes[i].burst_time;
+        processes[i].waiting_time = 0;
+        processes[i].turnaround_time = 0;
+    }
+
+    int t = 0; // current time
+    int done = 0; // flag to indicate if all processes are done
+
+    // loop through the processes until all processes are done
+    while (!done) {
+        done = 1;
+
+        for (int i = 0; i < n; i++) {
+            if (processes[i].remaining_time > 0) {
+                done = 0;
+
+                if (processes[i].remaining_time > quantum) {
+                    // execute the process for the quantum time
+                    t += quantum;
+                    processes[i].remaining_time -= quantum;
+                } else {
+                    // execute the process for the remaining time
+                    t += processes[i].remaining_time;
+                    processes[i].remaining_time = 0;
+                    // calculate the waiting time and turnaround time for the process
+                    processes[i].waiting_time = t - processes[i].burst_time;
+                    processes[i].turnaround_time = t;
+                }
+            }
+        }
+    }
+
+    // calculate the total waiting time and total turnaround time
+    for (int i = 0; i < n; i++) {
+        total_waiting_time += processes[i].waiting_time;
+        total_turnaround_time += processes[i].turnaround_time;
+    }
+
+    // calculate the average waiting time and average turnaround time
+    float average_waiting_time = (float) total_waiting_time / n;
+    float average_turnaround_time = (float) total_turnaround_time / n;
+
+    // print the average waiting time and average turnaround time
+    printf("Average waiting time: %.2f ms\n", average_waiting_time);
+    printf("Average turnaround time: %.2f ms\n", average_turnaround_time);
+
+    return 0;
+}
