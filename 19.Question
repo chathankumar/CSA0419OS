@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+#define SHARED_MEMORY_SIZE 1 // size of shared memory
+#define SEMAPHORE_COUNT 1 // number of semaphores
+
+// shared variables
+int shared_memory[SHARED_MEMORY_SIZE] = {0};
+sem_t semaphores[SEMAPHORE_COUNT]; // array of semaphores
+
+// function to double the shared memory value
+void *doubleValue(void *arg) {
+    sem_wait(&semaphores[0]); // wait for the semaphore
+    int value = shared_memory[0]; // read the shared memory value
+    value *= 2; // double the value
+    printf("Doubled value: %d\n", value); // print the doubled value
+    shared_memory[0] = value; // write the value back to shared memory
+    sem_post(&semaphores[0]); // release the semaphore
+    pthread_exit(NULL);
+}
+
+// function to multiply the shared memory value by 5
+void *multiplyValue(void *arg) {
+    sem_wait(&semaphores[0]); // wait for the semaphore
+    int value = shared_memory[0]; // read the shared memory value
+    value *= 5; // multiply the value by 5
+    printf("Multiplied value: %d\n", value); // print the multiplied value
+    shared_memory[0] = value; // write the value back to shared memory
+    sem_post(&semaphores[0]); // release the semaphore
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t thread1, thread2; // two threads
+    int status; // thread status
+
+    // initialize the semaphore
+    if (sem_init(&semaphores[0], 0, 1) == -1) {
+        perror("sem_init");
+        exit(1);
+    }
+
+    // create thread 1 to double the shared memory value
+    if (pthread_create(&thread1, NULL, doubleValue, NULL) != 0) {
+        perror("pthread_create");
+        exit(1);
+    }
+
+    // create thread 2 to multiply the shared memory value by 5
+    if (pthread_create(&thread2, NULL, multiplyValue, NULL) != 0) {
+        perror("pthread_create");
+        exit(1);
+    }
+
+    // join thread 1
+    if (pthread_join(thread1, (void **) &status) != 0) {
+        perror("pthread_join");
+        exit(1);
+    }
+
+    // join thread 2
+    if (pthread_join(thread2, (void **) &status) != 0) {
+        perror("pthread_join");
+        exit(1);
+    }
+
+    // destroy the semaphore
+    if (sem_destroy(&semaphores[0]) == -1) {
+        perror("sem_destroy");
+        exit(1);
+    }
+
+    return 0;
+}
