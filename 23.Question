@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int n = 5; // number of tracks
+    int tracks[] = {55, 58, 60, 70, 18}; // track positions
+    int head = 50; // starting head position
+    int i, j, temp, sum = 0;
+
+    // sort the tracks in ascending order
+    for(i = 0; i < n; i++)
+    {
+        for(j = i+1; j < n; j++)
+        {
+            if(tracks[i] > tracks[j])
+            {
+                temp = tracks[i];
+                tracks[i] = tracks[j];
+                tracks[j] = temp;
+            }
+        }
+    }
+
+    // find the index of the track that is closest to the head
+    int index = 0;
+    for(i = 0; i < n; i++)
+    {
+        if(tracks[i] > head)
+        {
+            break;
+        }
+        index = i;
+    }
+
+    // direction of head movement
+    int direction = 1;
+
+    // calculate head movement
+    while(index < n && index >= 0)
+    {
+        printf("%d ", tracks[index]);
+        sum += abs(head - tracks[index]);
+        head = tracks[index];
+        if(index == n-1)
+        {
+            direction = -1;
+        }
+        index += direction;
+    }
+
+    printf("\nAverage head movement: %.2f\n", (float)sum/n);
+
+    return 0;
+}
