@@ -1,0 +1,86 @@
+#include <stdio.h>
+
+int findOptimalPage(int pages[], int numPages, int pageFrames[], int numFrames, int currentIndex) {
+    int farthestIndex = -1;
+    int farthestPage = -1;
+
+    for (int i = 0; i < numFrames; i++) {
+        int j;
+        for (j = currentIndex + 1; j < numPages; j++) {
+            if (pages[j] == pageFrames[i]) {
+                if (j > farthestIndex) {
+                    farthestIndex = j;
+                    farthestPage = pageFrames[i];
+                }
+                break;
+            }
+        }
+
+        if (j == numPages) {
+            return i; // Page frame with a page that is not referenced in the future
+        }
+    }
+
+    if (farthestPage == -1) {
+        farthestIndex = numPages;
+        farthestPage = pageFrames[numFrames - 1];
+    }
+
+    for (int i = 0; i < numFrames; i++) {
+        if (pageFrames[i] == farthestPage) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+int isPageFault(int page, int pageFrames[], int numFrames) {
+    for (int i = 0; i < numFrames; i++) {
+        if (pageFrames[i] == page) {
+            return 0; // Page hit
+        }
+    }
+    return 1; // Page fault
+}
+
+void printPageFrames(int pageFrames[], int numFrames) {
+    for (int i = 0; i < numFrames; i++) {
+        printf("%d ", pageFrames[i]);
+    }
+    printf("\n");
+}
+
+int main() {
+    int numFrames = 3;
+    int pageFrames[numFrames];
+    int numPages = 8;
+    int pages[] = {4, 1, 2, 4, 3, 2, 1, 5};
+    int pageFaults = 0;
+
+    for (int i = 0; i < numFrames; i++) {
+        pageFrames[i] = -1; // Initialize page frames as empty (-1 represents an empty frame)
+    }
+
+    printf("Page Reference Sequence: ");
+    for (int i = 0; i < numPages; i++) {
+        printf("%d ", pages[i]);
+    }
+    printf("\n\n");
+
+    printf("Page Faults:\n");
+
+    for (int i = 0; i < numPages; i++) {
+        int page = pages[i];
+        if (isPageFault(page, pageFrames, numFrames)) {
+            pageFaults++;
+            int replaceIndex = findOptimalPage(pages, numPages, pageFrames, numFrames, i);
+            pageFrames[replaceIndex] = page;
+            printPageFrames(pageFrames, numFrames);
+        }
+    }
+
+    printf("\nTotal Page Faults: %d\n", pageFaults);
+
+    return 0;
+}
